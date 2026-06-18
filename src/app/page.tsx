@@ -49,7 +49,10 @@ type DragState =
       originHeight: number;
     };
 
-const paperSizes: Record<PaperKey, { label: string; width: number; height: number }> = {
+const paperSizes: Record<
+  PaperKey,
+  { label: string; width: number; height: number }
+> = {
   thermal58: { label: "Thermal 58mm", width: 236, height: 760 },
   thermal80: { label: "Thermal 80mm", width: 326, height: 860 },
   a5: { label: "A5", width: 560, height: 794 },
@@ -93,8 +96,18 @@ const sampleData = {
     payment_status: "paid",
     outlet_name: "Mistnove Bistro",
     order_items: [
-      { product_name: "Paneer Tikka", variant_name: "Regular", quantity: 2, price: "520.00" },
-      { product_name: "Masala Dosa", variant_name: "Ghee roast", quantity: 1, price: "260.00" },
+      {
+        product_name: "Paneer Tikka",
+        variant_name: "Regular",
+        quantity: 2,
+        price: "520.00",
+      },
+      {
+        product_name: "Masala Dosa",
+        variant_name: "Ghee roast",
+        quantity: 1,
+        price: "260.00",
+      },
     ],
   },
   paymentReceipt: {
@@ -154,7 +167,10 @@ const invoiceOptions: { key: InvoiceType; label: string }[] = [
 
 const newId = () => crypto.randomUUID();
 
-function createTemplate(invoiceType: InvoiceType, paper: PaperKey): TemplateDefinition {
+function createTemplate(
+  invoiceType: InvoiceType,
+  paper: PaperKey,
+): TemplateDefinition {
   const size = paperSizes[paper];
 
   if (invoiceType === "paymentReceipt") {
@@ -167,7 +183,15 @@ function createTemplate(invoiceType: InvoiceType, paper: PaperKey): TemplateDefi
       height: size.height,
       elements: [
         heading("Payment Receipt", 24, 26, size.width - 48),
-        variable("receipt_number", 24, 88, size.width - 48, "center", 16, "600"),
+        variable(
+          "receipt_number",
+          24,
+          88,
+          size.width - 48,
+          "center",
+          16,
+          "600",
+        ),
         text("Order", 24, 142, 110, 28, 13, "600"),
         variable("order_id", 148, 142, size.width - 172, "right", 13),
         text("Method", 24, 180, 110, 28, 13, "600"),
@@ -189,8 +213,21 @@ function createTemplate(invoiceType: InvoiceType, paper: PaperKey): TemplateDefi
     width: size.width,
     height: size.height,
     elements: [
-      heading(invoiceType === "kot" ? "Kitchen Order Ticket" : "Order Bill", 20, 22, size.width - 40),
-      variable(invoiceType === "kot" ? "kot_number" : "bill_number", 20, 76, size.width - 40, "center", 16, "700"),
+      heading(
+        invoiceType === "kot" ? "Kitchen Order Ticket" : "Order Bill",
+        20,
+        22,
+        size.width - 40,
+      ),
+      variable(
+        invoiceType === "kot" ? "kot_number" : "bill_number",
+        20,
+        76,
+        size.width - 40,
+        "center",
+        16,
+        "700",
+      ),
       text("Order", 22, 126, 76, 24, 12, "600"),
       variable("order_id", 112, 126, size.width - 134, "right", 12),
       text("Table", 22, 158, 76, 24, 12, "600"),
@@ -216,11 +253,38 @@ function text(
   fontSize = 14,
   fontWeight: TemplateElement["fontWeight"] = "400",
 ): TemplateElement {
-  return { id: newId(), type: "text", x, y, width, height, content, fontSize, fontWeight, align: "left" };
+  return {
+    id: newId(),
+    type: "text",
+    x,
+    y,
+    width,
+    height,
+    content,
+    fontSize,
+    fontWeight,
+    align: "left",
+  };
 }
 
-function heading(content: string, x: number, y: number, width: number): TemplateElement {
-  return { id: newId(), type: "text", x, y, width, height: 38, content, fontSize: 18, fontWeight: "700", align: "center" };
+function heading(
+  content: string,
+  x: number,
+  y: number,
+  width: number,
+): TemplateElement {
+  return {
+    id: newId(),
+    type: "text",
+    x,
+    y,
+    width,
+    height: 38,
+    content,
+    fontSize: 18,
+    fontWeight: "700",
+    align: "center",
+  };
 }
 
 function variable(
@@ -232,11 +296,33 @@ function variable(
   fontSize = 13,
   fontWeight: TemplateElement["fontWeight"] = "500",
 ): TemplateElement {
-  return { id: newId(), type: key === "outlet_image_icon" ? "image" : "variable", variableKey: key, x, y, width, height: 30, fontSize, fontWeight, align };
+  return {
+    id: newId(),
+    type: key === "outlet_image_icon" ? "image" : "variable",
+    variableKey: key,
+    x,
+    y,
+    width,
+    height: 30,
+    fontSize,
+    fontWeight,
+    align,
+  };
 }
 
 function table(x: number, y: number, width: number): TemplateElement {
-  return { id: newId(), type: "table", variableKey: "order_items", x, y, width, height: 150, fontSize: 11, fontWeight: "400", align: "left" };
+  return {
+    id: newId(),
+    type: "table",
+    variableKey: "order_items",
+    x,
+    y,
+    width,
+    height: 150,
+    fontSize: 11,
+    fontWeight: "400",
+    align: "left",
+  };
 }
 
 function line(x: number, y: number, width: number): TemplateElement {
@@ -246,17 +332,25 @@ function line(x: number, y: number, width: number): TemplateElement {
 export default function Home() {
   const [invoiceType, setInvoiceType] = useState<InvoiceType>("kot");
   const [paper, setPaper] = useState<PaperKey>("thermal80");
-  const [template, setTemplate] = useState<TemplateDefinition>(() => createTemplate("kot", "thermal80"));
-  const [selectedId, setSelectedId] = useState<string | null>(template.elements[0]?.id ?? null);
+  const [template, setTemplate] = useState<TemplateDefinition>(() =>
+    createTemplate("kot", "thermal80"),
+  );
+  const [selectedId, setSelectedId] = useState<string | null>(
+    template.elements[0]?.id ?? null,
+  );
   const [mode, setMode] = useState<"design" | "preview" | "json">("design");
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [notice, setNotice] = useState("Ready");
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const selected = template.elements.find((element) => element.id === selectedId) ?? null;
+  const selected =
+    template.elements.find((element) => element.id === selectedId) ?? null;
   const data = sampleData[template.invoiceType];
 
-  const jsonPreview = useMemo(() => JSON.stringify(template, null, 2), [template]);
+  const jsonPreview = useMemo(
+    () => JSON.stringify(template, null, 2),
+    [template],
+  );
 
   function switchInvoiceType(nextType: InvoiceType) {
     const nextTemplate = createTemplate(nextType, template.paper);
@@ -291,7 +385,10 @@ export default function Home() {
     setNotice(`${size.label} selected`);
   }
 
-  function startMove(event: PointerEvent<HTMLDivElement>, element: TemplateElement) {
+  function startMove(
+    event: PointerEvent<HTMLDivElement>,
+    element: TemplateElement,
+  ) {
     if (mode !== "design") return;
     event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -306,7 +403,10 @@ export default function Home() {
     });
   }
 
-  function startResize(event: PointerEvent<HTMLButtonElement>, element: TemplateElement) {
+  function startResize(
+    event: PointerEvent<HTMLButtonElement>,
+    element: TemplateElement,
+  ) {
     event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
     setSelectedId(element.id);
@@ -341,8 +441,20 @@ export default function Home() {
 
         return {
           ...element,
-          width: clamp(Math.round(dragState.originWidth + event.clientX - dragState.startX), 24, current.width - element.x),
-          height: clamp(Math.round(dragState.originHeight + event.clientY - dragState.startY), element.type === "line" ? 1 : 20, current.height - element.y),
+          width: clamp(
+            Math.round(
+              dragState.originWidth + event.clientX - dragState.startX,
+            ),
+            24,
+            current.width - element.x,
+          ),
+          height: clamp(
+            Math.round(
+              dragState.originHeight + event.clientY - dragState.startY,
+            ),
+            element.type === "line" ? 1 : 20,
+            current.height - element.y,
+          ),
         };
       }),
     }));
@@ -355,24 +467,52 @@ export default function Home() {
     if (!variableKey || !canvasRef.current) return;
 
     const bounds = canvasRef.current.getBoundingClientRect();
-    const x = clamp(Math.round(event.clientX - bounds.left), 0, template.width - 120);
-    const y = clamp(Math.round(event.clientY - bounds.top), 0, template.height - 32);
-    const nextElement = variableKey === "order_items" ? table(x, y, Math.min(300, template.width - x)) : variable(variableKey, x, y, Math.min(220, template.width - x));
+    const x = clamp(
+      Math.round(event.clientX - bounds.left),
+      0,
+      template.width - 120,
+    );
+    const y = clamp(
+      Math.round(event.clientY - bounds.top),
+      0,
+      template.height - 32,
+    );
+    const nextElement =
+      variableKey === "order_items"
+        ? table(x, y, Math.min(300, template.width - x))
+        : variable(variableKey, x, y, Math.min(220, template.width - x));
 
-    setTemplate((current) => ({ ...current, elements: [...current.elements, nextElement] }));
+    setTemplate((current) => ({
+      ...current,
+      elements: [...current.elements, nextElement],
+    }));
     setSelectedId(nextElement.id);
     setNotice(`${variableKey} added`);
   }
 
   function addText() {
-    const nextElement = text("New text", 28, 28, Math.min(180, template.width - 56), 30, 13, "500");
-    setTemplate((current) => ({ ...current, elements: [...current.elements, nextElement] }));
+    const nextElement = text(
+      "New text",
+      28,
+      28,
+      Math.min(180, template.width - 56),
+      30,
+      13,
+      "500",
+    );
+    setTemplate((current) => ({
+      ...current,
+      elements: [...current.elements, nextElement],
+    }));
     setSelectedId(nextElement.id);
   }
 
   function addLine() {
     const nextElement = line(28, 70, template.width - 56);
-    setTemplate((current) => ({ ...current, elements: [...current.elements, nextElement] }));
+    setTemplate((current) => ({
+      ...current,
+      elements: [...current.elements, nextElement],
+    }));
     setSelectedId(nextElement.id);
   }
 
@@ -380,20 +520,25 @@ export default function Home() {
     if (!selectedId) return;
     setTemplate((current) => ({
       ...current,
-      elements: current.elements.map((element) => (element.id === selectedId ? { ...element, ...patch } : element)),
+      elements: current.elements.map((element) =>
+        element.id === selectedId ? { ...element, ...patch } : element,
+      ),
     }));
   }
 
   function deleteSelected() {
     if (!selectedId) return;
-    setTemplate((current) => ({ ...current, elements: current.elements.filter((element) => element.id !== selectedId) }));
+    setTemplate((current) => ({
+      ...current,
+      elements: current.elements.filter((element) => element.id !== selectedId),
+    }));
     setSelectedId(null);
   }
 
-  function logTemplate() {
+  function saveTemplate() {
     console.info("invoice_template_json", template);
     setMode("json");
-    setNotice("Template JSON logged to console");
+    setNotice("Template JSON saved to console");
   }
 
   return (
@@ -412,7 +557,9 @@ export default function Home() {
           <div className={styles.segmented}>
             {invoiceOptions.map((option) => (
               <button
-                className={invoiceType === option.key ? styles.activeSegment : ""}
+                className={
+                  invoiceType === option.key ? styles.activeSegment : ""
+                }
                 key={option.key}
                 onClick={() => switchInvoiceType(option.key)}
                 type="button"
@@ -432,11 +579,19 @@ export default function Home() {
                 draggable
                 key={item.key}
                 onClick={() => {
-                  const nextElement = item.key === "order_items" ? table(24, 120, template.width - 48) : variable(item.key, 24, 120, template.width - 48);
-                  setTemplate((current) => ({ ...current, elements: [...current.elements, nextElement] }));
+                  const nextElement =
+                    item.key === "order_items"
+                      ? table(24, 120, template.width - 48)
+                      : variable(item.key, 24, 120, template.width - 48);
+                  setTemplate((current) => ({
+                    ...current,
+                    elements: [...current.elements, nextElement],
+                  }));
                   setSelectedId(nextElement.id);
                 }}
-                onDragStart={(event) => event.dataTransfer.setData("variable-key", item.key)}
+                onDragStart={(event) =>
+                  event.dataTransfer.setData("variable-key", item.key)
+                }
                 type="button"
               >
                 <span>{item.label}</span>
@@ -450,20 +605,39 @@ export default function Home() {
       <section className={styles.workbench}>
         <header className={styles.toolbar}>
           <div className={styles.toolbarGroup}>
-            <button className={styles.iconButton} onClick={addText} title="Add text" type="button">
+            <button
+              className={styles.iconButton}
+              onClick={addText}
+              title="Add text"
+              type="button"
+            >
               T
             </button>
-            <button className={styles.iconButton} onClick={addLine} title="Add line" type="button">
+            <button
+              className={styles.iconButton}
+              onClick={addLine}
+              title="Add line"
+              type="button"
+            >
               -
             </button>
-            <button className={styles.iconButton} disabled={!selectedId} onClick={deleteSelected} title="Delete selected" type="button">
+            <button
+              className={styles.iconButton}
+              disabled={!selectedId}
+              onClick={deleteSelected}
+              title="Delete selected"
+              type="button"
+            >
               Del
             </button>
           </div>
 
           <label className={styles.selectLabel}>
             Paper
-            <select value={paper} onChange={(event) => switchPaper(event.target.value as PaperKey)}>
+            <select
+              value={paper}
+              onChange={(event) => switchPaper(event.target.value as PaperKey)}
+            >
               {Object.entries(paperSizes).map(([key, size]) => (
                 <option key={key} value={key}>
                   {size.label}
@@ -473,25 +647,55 @@ export default function Home() {
           </label>
 
           <div className={styles.viewSwitch}>
-            <button className={mode === "design" ? styles.activeView : ""} onClick={() => setMode("design")} type="button">
+            <button
+              className={mode === "design" ? styles.activeView : ""}
+              onClick={() => setMode("design")}
+              type="button"
+            >
               Design
             </button>
-            <button className={mode === "preview" ? styles.activeView : ""} onClick={() => setMode("preview")} type="button">
+            <button
+              className={mode === "preview" ? styles.activeView : ""}
+              onClick={() => setMode("preview")}
+              type="button"
+            >
               Preview
             </button>
-            <button className={mode === "json" ? styles.activeView : ""} onClick={() => setMode("json")} type="button">
+            <button
+              className={mode === "json" ? styles.activeView : ""}
+              onClick={() => setMode("json")}
+              type="button"
+            >
               JSON
             </button>
           </div>
 
-          <button className={styles.primaryButton} onClick={logTemplate} type="button">
-            Log JSON
+          <button
+            className={styles.primaryButton}
+            onClick={saveTemplate}
+            type="button"
+          >
+            Save Template
           </button>
         </header>
 
         <div className={styles.stageWrap}>
           {mode === "json" ? (
-            <pre className={styles.jsonViewer}>{jsonPreview}</pre>
+            <div>
+              <div
+                onClick={() => {
+                  navigator.clipboard.writeText(jsonPreview);
+                }}
+                style={{
+                  textAlign: "center",
+                  cursor: "pointer",
+                  marginBottom: 8,
+                }}
+              >
+                Copy
+              </div>
+              <pre className={styles.jsonViewer}>{jsonPreview}</pre>
+            </div>
           ) : (
             <div
               className={styles.paper}
@@ -526,35 +730,78 @@ export default function Home() {
             <div className={styles.inspector}>
               <label>
                 X
-                <input type="number" value={selected.x} onChange={(event) => updateSelected({ x: Number(event.target.value) })} />
+                <input
+                  type="number"
+                  value={selected.x}
+                  onChange={(event) =>
+                    updateSelected({ x: Number(event.target.value) })
+                  }
+                />
               </label>
               <label>
                 Y
-                <input type="number" value={selected.y} onChange={(event) => updateSelected({ y: Number(event.target.value) })} />
+                <input
+                  type="number"
+                  value={selected.y}
+                  onChange={(event) =>
+                    updateSelected({ y: Number(event.target.value) })
+                  }
+                />
               </label>
               <label>
                 W
-                <input type="number" value={selected.width} onChange={(event) => updateSelected({ width: Number(event.target.value) })} />
+                <input
+                  type="number"
+                  value={selected.width}
+                  onChange={(event) =>
+                    updateSelected({ width: Number(event.target.value) })
+                  }
+                />
               </label>
               <label>
                 H
-                <input type="number" value={selected.height} onChange={(event) => updateSelected({ height: Number(event.target.value) })} />
+                <input
+                  type="number"
+                  value={selected.height}
+                  onChange={(event) =>
+                    updateSelected({ height: Number(event.target.value) })
+                  }
+                />
               </label>
               {selected.type === "text" ? (
                 <label className={styles.fullField}>
                   Text
-                  <textarea value={selected.content ?? ""} onChange={(event) => updateSelected({ content: event.target.value })} />
+                  <textarea
+                    value={selected.content ?? ""}
+                    onChange={(event) =>
+                      updateSelected({ content: event.target.value })
+                    }
+                  />
                 </label>
               ) : null}
               {selected.type !== "line" ? (
                 <>
                   <label>
                     Size
-                    <input type="number" value={selected.fontSize} onChange={(event) => updateSelected({ fontSize: Number(event.target.value) })} />
+                    <input
+                      type="number"
+                      value={selected.fontSize}
+                      onChange={(event) =>
+                        updateSelected({ fontSize: Number(event.target.value) })
+                      }
+                    />
                   </label>
                   <label>
                     Weight
-                    <select value={selected.fontWeight ?? "400"} onChange={(event) => updateSelected({ fontWeight: event.target.value as TemplateElement["fontWeight"] })}>
+                    <select
+                      value={selected.fontWeight ?? "400"}
+                      onChange={(event) =>
+                        updateSelected({
+                          fontWeight: event.target
+                            .value as TemplateElement["fontWeight"],
+                        })
+                      }
+                    >
                       <option value="400">Regular</option>
                       <option value="500">Medium</option>
                       <option value="600">Semibold</option>
@@ -565,7 +812,14 @@ export default function Home() {
                     Align
                     <div className={styles.segmented}>
                       {(["left", "center", "right"] as const).map((align) => (
-                        <button className={selected.align === align ? styles.activeSegment : ""} key={align} onClick={() => updateSelected({ align })} type="button">
+                        <button
+                          className={
+                            selected.align === align ? styles.activeSegment : ""
+                          }
+                          key={align}
+                          onClick={() => updateSelected({ align })}
+                          type="button"
+                        >
                           {align}
                         </button>
                       ))}
@@ -581,7 +835,9 @@ export default function Home() {
 
         <section className={styles.panel}>
           <h2>Preset data</h2>
-          <pre className={styles.dataPreview}>{JSON.stringify(data, null, 2)}</pre>
+          <pre className={styles.dataPreview}>
+            {JSON.stringify(data, null, 2)}
+          </pre>
         </section>
         <div className={styles.notice}>{notice}</div>
       </aside>
@@ -601,8 +857,14 @@ function TemplateBlock({
   element: TemplateElement;
   isDesign: boolean;
   isSelected: boolean;
-  onPointerDown: (event: PointerEvent<HTMLDivElement>, element: TemplateElement) => void;
-  onResizeStart: (event: PointerEvent<HTMLButtonElement>, element: TemplateElement) => void;
+  onPointerDown: (
+    event: PointerEvent<HTMLDivElement>,
+    element: TemplateElement,
+  ) => void;
+  onResizeStart: (
+    event: PointerEvent<HTMLButtonElement>,
+    element: TemplateElement,
+  ) => void;
 }) {
   const value = resolveValue(data, element.variableKey);
   const style = {
@@ -621,20 +883,37 @@ function TemplateBlock({
       onPointerDown={(event) => onPointerDown(event, element)}
       style={style}
     >
-      {element.type === "table" ? <ItemsTable items={Array.isArray(value) ? value : []} /> : null}
+      {element.type === "table" ? (
+        <ItemsTable items={Array.isArray(value) ? value : []} />
+      ) : null}
       {element.type === "line" ? <span className={styles.lineElement} /> : null}
       {element.type === "image" ? (
         isDesign ? (
-          <span className={styles.imagePlaceholder}>{`{{${element.variableKey}}}`}</span>
+          <span
+            className={styles.imagePlaceholder}
+          >{`{{${element.variableKey}}}`}</span>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img className={styles.templateImage} src={String(value ?? "")} alt="" />
+          <img
+            className={styles.templateImage}
+            src={String(value ?? "")}
+            alt=""
+          />
         )
       ) : null}
       {element.type === "text" ? element.content : null}
-      {element.type === "variable" ? (isDesign ? `{{${element.variableKey}}}` : String(value ?? "")) : null}
+      {element.type === "variable"
+        ? isDesign
+          ? `{{${element.variableKey}}}`
+          : String(value ?? "")
+        : null}
       {isDesign && isSelected ? (
-        <button className={styles.resizeHandle} onPointerDown={(event) => onResizeStart(event, element)} title="Resize" type="button" />
+        <button
+          className={styles.resizeHandle}
+          onPointerDown={(event) => onResizeStart(event, element)}
+          title="Resize"
+          type="button"
+        />
       ) : null}
     </div>
   );
