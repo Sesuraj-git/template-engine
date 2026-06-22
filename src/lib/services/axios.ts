@@ -6,8 +6,14 @@ import axios, {
   AxiosResponse,
 } from "axios";
 
-const backend_url = localStorage.getItem("backend_url");
-const REFRESH_API = `${backend_url}/auth/refresh-token`;
+function getBackendUrl(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("backend_url") || "";
+}
+
+function getRefreshApi(): string {
+  return `${getBackendUrl()}/auth/refresh-token`;
+}
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -55,14 +61,18 @@ function processQueue(error: unknown, token: string | null): void {
 // ─── Axios instance ──────────────────────────────────────────────────────────
 
 const api: AxiosInstance = axios.create({
-  baseURL: backend_url || "", // Fallback to empty string if backend_url is not set
+  baseURL: getBackendUrl(),
   headers: { "Content-Type": "application/json" },
 });
 
-// ── Request interceptor: attach bearer token ─────────────────────────────────
+// ── Request interceptor: attach bearer token + dynamic baseURL ───────────────
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    const accessToken = await localStorage.getItem("accessToken");
+    // Resolve baseURL at request time (handles late localStorage writes)
+    const url = getBackendUrl();
+    if (url) config.baseURL = url;
+
+    const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -100,8 +110,8 @@ api.interceptors.response.use(
 
       try {
         // Get current session to read refreshToken + user_role_id
-        const accessToken = await localStorage.getItem("accessToken");
-        const refreshToken = await localStorage.getItem("refreshToken");
+        const accessToken = localStorage.getItem("accessToken");
+        const refreshToken = localStorage.getItem("refreshToken");
         if (!accessToken) {
           throw new Error("No access token available");
         }
@@ -118,7 +128,7 @@ api.interceptors.response.use(
         };
         if (userRoleId) body.user_role_id = userRoleId;
 
-        const refreshRes = await axios.put(REFRESH_API, body);
+        const refreshRes = await axios.put(getRefreshApi(), body);
         const { token: newAccessToken, refresh: newRefreshToken } =
           refreshRes.data as { token: string; refresh: string };
 
