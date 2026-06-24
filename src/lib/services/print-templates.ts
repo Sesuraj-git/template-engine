@@ -112,11 +112,17 @@ export interface VersionHistoryParams {
 
 // ─── API Functions ──────────────────────────────────────────────────────────
 
+// NOTE: per the backend's registered swagger routes, the collection root
+// (GET and POST on /print-templates) is registered WITH a trailing slash
+// (/api/print-templates/) and 404s without it. Sub-routes (/resolve,
+// /assign, /{templateId}/versions, /versions/{id}/publish) do NOT use a
+// trailing slash. BASE intentionally has no trailing slash so it composes
+// cleanly into both forms below.
 const BASE = "/print-templates";
 
 /** Create a new print template (version 1, unpublished). */
 export async function createTemplate(payload: CreateTemplatePayload) {
-  const res = await api.post<ApiResponse<TemplateVersion>>(BASE, payload);
+  const res = await api.post<ApiResponse<TemplateVersion>>(`${BASE}/`, payload);
   return res.data;
 }
 
@@ -150,7 +156,7 @@ export async function resolveTemplate(outletId: string, invoiceType: string) {
 
 /** List all template groups (latest version metadata). */
 export async function listTemplates(params?: ListTemplatesParams) {
-  const res = await api.get<PaginatedResponse<TemplateListItem>>(BASE, {
+  const res = await api.get<PaginatedResponse<TemplateListItem>>(`${BASE}/`, {
     params,
   });
   return res.data;

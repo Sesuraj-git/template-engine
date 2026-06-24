@@ -39,3 +39,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+PRINT_TEMPLATES_INTEGRATION_PLAN.md
