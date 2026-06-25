@@ -39,4 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#md files
 PRINT_TEMPLATES_INTEGRATION_PLAN.md
+PROJECT_GUIDE.md
+INTEGRATION_NOTES.md
+POST_INTEGRATION_GUIDE.md

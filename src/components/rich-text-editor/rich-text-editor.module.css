@@ -1,0 +1,164 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--card-background, #fff);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  background: var(--toolbar-background, #f9fafb);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.toolGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 8px;
+  border-right: 1px solid var(--border, #e5e7eb);
+}
+
+.toolGroup:last-child {
+  border-right: none;
+}
+
+.toolButton {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--foreground, #111827);
+}
+
+.toolButton:hover:not(:disabled) {
+  background: var(--hover-background, #e5e7eb);
+}
+
+.toolButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolButtonActive {
+  background: var(--accent, #4f46e5);
+  color: #fff;
+}
+
+.select {
+  height: 28px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  padding: 0 6px;
+}
+
+.swatchLabel {
+  font-size: 11px;
+  color: var(--muted-foreground, #6b7280);
+  margin-right: 2px;
+}
+
+.swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--border, #d1d5db);
+  cursor: pointer;
+  padding: 0;
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.contentArea {
+  padding: 24px;
+  min-height: 480px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Tiptap ProseMirror content styling */
+.contentArea :global(.ProseMirror) {
+  outline: none;
+  min-height: 400px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.contentArea :global(.ProseMirror p.is-editor-empty:first-child::before) {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--muted-foreground, #9ca3af);
+  pointer-events: none;
+  height: 0;
+}
+
+.contentArea :global(.ProseMirror table) {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 12px 0;
+}
+
+.contentArea :global(.ProseMirror table td),
+.contentArea :global(.ProseMirror table th) {
+  border: 1px solid var(--border, #d1d5db);
+  padding: 6px 8px;
+  vertical-align: top;
+}
+
+.contentArea :global(.ProseMirror table th) {
+  background: var(--toolbar-background, #f9fafb);
+  font-weight: 600;
+}
+
+.contentArea :global(.ProseMirror img) {
+  max-width: 100%;
+  border-radius: 6px;
+}
+
+.contentArea :global(.ProseMirror blockquote) {
+  border-left: 3px solid var(--border, #d1d5db);
+  margin-left: 0;
+  padding-left: 14px;
+  color: var(--muted-foreground, #6b7280);
+}
+
+.contentArea :global(.ProseMirror pre) {
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+}
+
+.contentArea :global(.ProseMirror ul[data-type="taskList"]) {
+  list-style: none;
+  padding-left: 4px;
+}
+
+.contentArea :global(.ProseMirror ul[data-type="taskList"] li) {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
