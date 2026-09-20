@@ -109,6 +109,8 @@ const sampleData = {
     grand_total: "779.00",
     payment_status: "paid",
     outlet_name: "Mistnove Bistro",
+    outlet_address: "123, MG Road, Indiranagar, Bengaluru, Karnataka 560038",
+    outlet_gstin: "29AAAAA0000A1Z5",
     order_items: [
       {
         product_name: "Paneer Tikka",
@@ -132,6 +134,8 @@ const sampleData = {
     paid_amount: "779.00",
     paid_at: "13 May 2026, 04:50 AM",
     outlet_name: "Mistnove Bistro",
+    outlet_address: "123, MG Road, Indiranagar, Bengaluru, Karnataka 560038",
+    outlet_gstin: "29AAAAA0000A1Z5",
     cashier_name: "A. Sharma",
   },
 };
@@ -159,6 +163,8 @@ const variableLabels: Record<InvoiceType, { key: string; label: string }[]> = {
     { key: "grand_total", label: "Grand total" },
     { key: "payment_status", label: "Payment status" },
     { key: "outlet_name", label: "Outlet name" },
+    { key: "outlet_address", label: "Outlet address" },
+    { key: "outlet_gstin", label: "GSTIN" },
     { key: "order_items", label: "Order items" },
   ],
   paymentReceipt: [
@@ -169,6 +175,8 @@ const variableLabels: Record<InvoiceType, { key: string; label: string }[]> = {
     { key: "paid_amount", label: "Paid amount" },
     { key: "paid_at", label: "Paid at" },
     { key: "outlet_name", label: "Outlet name" },
+    { key: "outlet_address", label: "Outlet address" },
+    { key: "outlet_gstin", label: "GSTIN" },
     { key: "cashier_name", label: "Cashier name" },
   ],
 };
@@ -223,105 +231,473 @@ function mapPaperSize(apiSize: string): PaperKey {
   return map[apiSize] || "thermal80";
 }
 
+// Shared left margin + row rhythm for every default layout: tight enough
+// that thermal paper (billed by length) isn't wasted, generous enough to
+// stay legible at 203dpi.
+const MARGIN = 18;
+const ROW = 22;
+
 function buildDefaultTemplate(
   invoiceType: InvoiceType,
   paper: PaperKey,
 ): TemplateDefinition {
   const size = paperSizes[paper];
+  const contentWidth = size.width - MARGIN * 2;
+
+  if (invoiceType === "kot") {
+    const elements: TemplateElement[] = [];
+    let y = MARGIN;
+
+    elements.push(imageEl("outlet_image_icon", MARGIN, y, 32));
+    elements.push(heading("Kitchen Order Ticket", MARGIN, y, contentWidth));
+    y += 40;
+
+    elements.push(
+      variableEl("kot_number", MARGIN, y, contentWidth, "center", 15, "700"),
+    );
+    y += ROW + 4;
+
+    elements.push(lineEl(MARGIN, y, contentWidth));
+    y += 10;
+
+    y = labelValueRow(elements, y, contentWidth, "Order", "order_id");
+    y = labelValueRow(elements, y, contentWidth, "Table", "table_number");
+    y = labelValueRow(elements, y, contentWidth, "Type", "order_type");
+    y += 4;
+
+    elements.push(lineEl(MARGIN, y, contentWidth));
+    y += 10;
+
+    const tableHeight = 160;
+    elements.push(tableEl(MARGIN, y, contentWidth, tableHeight));
+    y += tableHeight + 10;
+
+    elements.push(lineEl(MARGIN, y, contentWidth));
+    y += 10;
+
+    elements.push(
+      variableEl(
+        "payment_status",
+        MARGIN,
+        y,
+        contentWidth,
+        "center",
+        12,
+        "600",
+      ),
+    );
+    y += ROW - 2;
+    elements.push(
+      variableEl("order_time", MARGIN, y, contentWidth, "center", 11),
+    );
+    y += ROW - 2;
+    elements.push(
+      variableEl("outlet_name", MARGIN, y, contentWidth, "center", 12, "700"),
+    );
+    y += ROW;
+
+    return {
+      id: newId(),
+      name: "Kitchen order ticket",
+      invoiceType,
+      paper,
+      width: size.width,
+      height: Math.max(size.height, y + MARGIN),
+      elements,
+    };
+  }
 
   if (invoiceType === "paymentReceipt") {
+    const elements: TemplateElement[] = [];
+    let y = MARGIN;
+
+    elements.push(heading("Payment Receipt", MARGIN, y, contentWidth));
+    y += 36;
+
+    elements.push(
+      variableEl(
+        "receipt_number",
+        MARGIN,
+        y,
+        contentWidth,
+        "center",
+        15,
+        "700",
+      ),
+    );
+    y += ROW + 4;
+
+    elements.push(lineEl(MARGIN, y, contentWidth));
+    y += 10;
+
+    y = labelValueRow(elements, y, contentWidth, "Order", "order_id");
+    y = labelValueRow(elements, y, contentWidth, "Method", "payment_method");
+    y = labelValueRow(elements, y, contentWidth, "Txn ID", "transaction_id");
+    y += 8;
+
+    elements.push(lineEl(MARGIN, y, contentWidth));
+    y += 10;
+
+    elements.push(textEl("Amount paid", MARGIN, y, 150, 30, 15, "700"));
+    elements.push(
+      variableEl(
+        "paid_amount",
+        MARGIN + 150,
+        y,
+        contentWidth - 150,
+        "right",
+        17,
+        "700",
+      ),
+    );
+    y += 36;
+
+    elements.push(lineEl(MARGIN, y, contentWidth));
+    y += 10;
+
+    elements.push(variableEl("paid_at", MARGIN, y, contentWidth, "center", 11));
+    y += ROW - 2;
+    elements.push(
+      variableEl("cashier_name", MARGIN, y, contentWidth, "center", 11),
+    );
+    y += ROW - 2;
+    y = outletFooter(elements, y, contentWidth);
+
     return {
       id: newId(),
       name: "Payment receipt",
       invoiceType,
       paper,
       width: size.width,
-      height: size.height,
-      elements: [
-        heading("Payment Receipt", 24, 26, size.width - 48),
-        variableEl(
-          "receipt_number",
-          24,
-          88,
-          size.width - 48,
-          "center",
-          16,
-          "600",
-        ),
-        textEl("Order", 24, 142, 110, 28, 13, "600"),
-        variableEl("order_id", 148, 142, size.width - 172, "right", 13),
-        textEl("Method", 24, 180, 110, 28, 13, "600"),
-        variableEl("payment_method", 148, 180, size.width - 172, "right", 13),
-        textEl("Amount paid", 24, 230, 130, 32, 16, "700"),
-        variableEl(
-          "paid_amount",
-          162,
-          230,
-          size.width - 186,
-          "right",
-          18,
-          "700",
-        ),
-        lineEl(24, 294, size.width - 48),
-        variableEl("paid_at", 24, 320, size.width - 48, "center", 12),
-        variableEl(
-          "outlet_name",
-          24,
-          360,
-          size.width - 48,
-          "center",
-          14,
-          "600",
-        ),
-      ],
+      height: Math.max(size.height, y + MARGIN),
+      elements,
     };
   }
 
+  // Order bill — pinned to the hand-tuned layout below rather than
+  // generated, so it stays exactly as designed instead of drifting on
+  // every code change.
   return {
     id: newId(),
-    name: invoiceType === "kot" ? "Kitchen order ticket" : "Order bill",
+    name: "Order bill",
     invoiceType,
     paper,
     width: size.width,
     height: size.height,
-    elements: [
-      heading(
-        invoiceType === "kot" ? "Kitchen Order Ticket" : "Order Bill",
-        20,
-        22,
-        size.width - 40,
-      ),
-      variableEl(
-        invoiceType === "kot" ? "kot_number" : "bill_number",
-        20,
-        76,
-        size.width - 40,
-        "center",
-        16,
-        "700",
-      ),
-      textEl("Order", 22, 126, 76, 24, 12, "600"),
-      variableEl("order_id", 112, 126, size.width - 134, "right", 12),
-      textEl("Table", 22, 158, 76, 24, 12, "600"),
-      variableEl("table_number", 112, 158, size.width - 134, "right", 12),
-      textEl("Type", 22, 190, 76, 24, 12, "600"),
-      variableEl("order_type", 112, 190, size.width - 134, "right", 12),
-      lineEl(20, 234, size.width - 40),
-      tableEl(20, 258, size.width - 40),
-      lineEl(20, 430, size.width - 40),
-      variableEl(
-        "payment_status",
-        20,
-        462,
-        size.width - 40,
-        "center",
-        13,
-        "600",
-      ),
-      variableEl("order_time", 20, 500, size.width - 40, "center", 12),
-      variableEl("outlet_name", 20, 542, size.width - 40, "center", 13, "700"),
-    ],
+    elements: buildOrderBillElements(paper),
   };
+}
+
+// Base coordinates were authored against thermal80 (326x860); other paper
+// sizes reuse the same scale-and-clamp math as switchPaper so the layout
+// still fits instead of overflowing a narrower/shorter canvas.
+const ORDER_BILL_BASE_PAPER: PaperKey = "thermal80";
+
+const orderBillBaseElements: Omit<TemplateElement, "id">[] = [
+  {
+    type: "text",
+    x: 19,
+    y: 15,
+    width: 290,
+    height: 38,
+    content: "Order Invoice",
+    fontSize: 18,
+    fontWeight: "700",
+    align: "center",
+  },
+  {
+    type: "variable",
+    variableKey: "bill_number",
+    x: 22,
+    y: 108,
+    width: 290,
+    height: 30,
+    fontSize: 15,
+    fontWeight: "700",
+    align: "center",
+  },
+  { type: "line", x: 22, y: 99, width: 290, height: 1, fontSize: 1 },
+  {
+    type: "text",
+    x: 19,
+    y: 141,
+    width: 76,
+    height: 20,
+    content: "Order",
+    fontSize: 12,
+    fontWeight: "600",
+    align: "left",
+  },
+  {
+    type: "variable",
+    variableKey: "order_id",
+    x: 99,
+    y: 139,
+    width: 214,
+    height: 30,
+    fontSize: 12,
+    fontWeight: "500",
+    align: "right",
+  },
+  {
+    type: "text",
+    x: 29,
+    y: 740,
+    width: 76,
+    height: 20,
+    content: "Table",
+    fontSize: 12,
+    fontWeight: "600",
+    align: "left",
+  },
+  {
+    type: "variable",
+    variableKey: "table_number",
+    x: 197,
+    y: 165,
+    width: 112,
+    height: 33,
+    fontSize: 12,
+    fontWeight: "500",
+    align: "right",
+  },
+  {
+    type: "text",
+    x: 19,
+    y: 167,
+    width: 76,
+    height: 20,
+    content: "Type",
+    fontSize: 12,
+    fontWeight: "600",
+    align: "left",
+  },
+  {
+    type: "variable",
+    variableKey: "order_type",
+    x: 99,
+    y: 167,
+    width: 153,
+    height: 29,
+    fontSize: 12,
+    fontWeight: "500",
+    align: "right",
+  },
+  { type: "line", x: 19, y: 204, width: 290, height: 1, fontSize: 1 },
+  {
+    type: "table",
+    variableKey: "order_items",
+    x: 19,
+    y: 187,
+    width: 290,
+    height: 150,
+    fontSize: 11,
+    fontWeight: "400",
+    align: "left",
+  },
+  { type: "line", x: 21, y: 323, width: 290, height: 1, fontSize: 1 },
+  {
+    type: "text",
+    x: 19,
+    y: 339,
+    width: 110,
+    height: 20,
+    content: "Subtotal",
+    fontSize: 12,
+    fontWeight: "500",
+    align: "left",
+  },
+  {
+    type: "variable",
+    variableKey: "subtotal",
+    x: 129,
+    y: 341,
+    width: 180,
+    height: 30,
+    fontSize: 12,
+    fontWeight: "500",
+    align: "right",
+  },
+  {
+    type: "text",
+    x: 19,
+    y: 368,
+    width: 110,
+    height: 20,
+    content: "Tax",
+    fontSize: 12,
+    fontWeight: "500",
+    align: "left",
+  },
+  {
+    type: "variable",
+    variableKey: "tax",
+    x: 129,
+    y: 367,
+    width: 180,
+    height: 30,
+    fontSize: 12,
+    fontWeight: "500",
+    align: "right",
+  },
+  {
+    type: "text",
+    x: 19,
+    y: 398,
+    width: 110,
+    height: 20,
+    content: "Discount",
+    fontSize: 12,
+    fontWeight: "500",
+    align: "left",
+  },
+  {
+    type: "variable",
+    variableKey: "discount",
+    x: 126,
+    y: 397,
+    width: 180,
+    height: 30,
+    fontSize: 12,
+    fontWeight: "500",
+    align: "right",
+  },
+  { type: "line", x: 18, y: 432, width: 290, height: 1, fontSize: 1 },
+  {
+    type: "text",
+    x: 19,
+    y: 441,
+    width: 110,
+    height: 26,
+    content: "Grand Total",
+    fontSize: 14,
+    fontWeight: "700",
+    align: "left",
+  },
+  {
+    type: "variable",
+    variableKey: "grand_total",
+    x: 136,
+    y: 440,
+    width: 180,
+    height: 30,
+    fontSize: 14,
+    fontWeight: "700",
+    align: "right",
+  },
+  { type: "line", x: 25, y: 480, width: 290, height: 1, fontSize: 1 },
+  {
+    type: "variable",
+    variableKey: "payment_status",
+    x: 23,
+    y: 489,
+    width: 290,
+    height: 30,
+    fontSize: 12,
+    fontWeight: "600",
+    align: "center",
+  },
+  {
+    type: "variable",
+    variableKey: "outlet_name",
+    x: 19,
+    y: 47,
+    width: 290,
+    height: 30,
+    fontSize: 12,
+    fontWeight: "700",
+    align: "center",
+  },
+  {
+    type: "variable",
+    variableKey: "outlet_address",
+    x: 18,
+    y: 70,
+    width: 290,
+    height: 30,
+    fontSize: 10,
+    fontWeight: "500",
+    align: "center",
+  },
+  {
+    type: "text",
+    x: 82,
+    y: 583,
+    width: 131,
+    height: 20,
+    content: "GSTIN",
+    fontSize: 12,
+    fontWeight: "600",
+    align: "left",
+  },
+  {
+    type: "variable",
+    variableKey: "outlet_gstin",
+    x: 173,
+    y: 17,
+    width: 153,
+    height: 31,
+    fontSize: 12,
+    fontWeight: "500",
+    align: "right",
+  },
+];
+
+function buildOrderBillElements(paper: PaperKey): TemplateElement[] {
+  const base = paperSizes[ORDER_BILL_BASE_PAPER];
+  const target = paperSizes[paper];
+  const scaleX = target.width / base.width;
+  const scaleY = target.height / base.height;
+
+  return orderBillBaseElements.map((el) => ({
+    ...el,
+    id: newId(),
+    x: Math.round(el.x * scaleX),
+    y: Math.round(el.y * scaleY),
+    width: Math.max(18, Math.round(el.width * scaleX)),
+    height: Math.max(1, Math.round(el.height * scaleY)),
+  }));
+}
+
+// Pushes a "Label ........ {{value}}" row and returns the next y cursor.
+function labelValueRow(
+  elements: TemplateElement[],
+  y: number,
+  contentWidth: number,
+  label: string,
+  variableKey: string,
+): number {
+  const labelWidth = 76;
+  elements.push(textEl(label, MARGIN, y, labelWidth, ROW - 2, 12, "600"));
+  elements.push(
+    variableEl(
+      variableKey,
+      MARGIN + labelWidth,
+      y,
+      contentWidth - labelWidth,
+      "right",
+      12,
+    ),
+  );
+  return y + ROW;
+}
+
+// Appends the shared outlet-name / address / GSTIN footer block used by the
+// order bill and payment receipt — both are tax documents; the KOT skips it.
+function outletFooter(
+  elements: TemplateElement[],
+  y: number,
+  contentWidth: number,
+): number {
+  elements.push(
+    variableEl("outlet_name", MARGIN, y, contentWidth, "center", 12, "700"),
+  );
+  y += ROW - 2;
+  elements.push(
+    variableEl("outlet_address", MARGIN, y, contentWidth, "center", 10),
+  );
+  y += ROW - 4;
+  return labelValueRow(elements, y, contentWidth, "GSTIN", "outlet_gstin");
 }
 
 function textEl(
@@ -390,7 +766,12 @@ function variableEl(
   };
 }
 
-function tableEl(x: number, y: number, width: number): TemplateElement {
+function tableEl(
+  x: number,
+  y: number,
+  width: number,
+  height = 150,
+): TemplateElement {
   return {
     id: newId(),
     type: "table",
@@ -398,10 +779,29 @@ function tableEl(x: number, y: number, width: number): TemplateElement {
     x,
     y,
     width,
-    height: 150,
+    height,
     fontSize: 11,
     fontWeight: "400",
     align: "left",
+  };
+}
+
+function imageEl(
+  key: string,
+  x: number,
+  y: number,
+  size: number,
+): TemplateElement {
+  return {
+    id: newId(),
+    type: "image",
+    variableKey: key,
+    x,
+    y,
+    width: size,
+    height: size,
+    fontSize: 11,
+    align: "center",
   };
 }
 
@@ -1168,13 +1568,20 @@ function TemplateBlock({
 }
 
 function ItemsTable({ items }: { items: unknown[] }) {
+  // Bill items carry a price, KOT items carry a prep note — the third
+  // column reflects whichever the data actually has instead of a fixed
+  // "Notes" label that misrepresents order-bill line prices.
+  const hasPrice = items.some(
+    (item) => (item as Record<string, unknown>).price !== undefined,
+  );
+
   return (
     <table className={styles.itemsTable}>
       <thead>
         <tr>
           <th>Item</th>
           <th>Qty</th>
-          <th>Notes</th>
+          <th>{hasPrice ? "Price" : "Notes"}</th>
         </tr>
       </thead>
       <tbody>
@@ -1187,7 +1594,7 @@ function ItemsTable({ items }: { items: unknown[] }) {
                 <span>{String(row.variant_name ?? "")}</span>
               </td>
               <td>{String(row.quantity ?? "")}</td>
-              <td>{String(row.notes ?? row.price ?? "")}</td>
+              <td>{String(row.price ?? row.notes ?? "")}</td>
             </tr>
           );
         })}

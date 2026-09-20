@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Courier_Prime } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -9,6 +9,15 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+// Monospaced, fixed-pitch face: mirrors the character-cell fonts thermal
+// (ESC/POS) printers render natively, so the on-screen bill preview matches
+// print output and item/price columns stay aligned without a real table grid.
+const thermalMono = Courier_Prime({
+  variable: "--font-thermal",
+  weight: ["400", "700"],
   subsets: ["latin"],
 });
 
@@ -23,7 +32,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${thermalMono.variable}`}
+    >
       <body>{children}</body>
     </html>
   );

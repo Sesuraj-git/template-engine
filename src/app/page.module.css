@@ -242,6 +242,7 @@
     0 18px 40px rgba(16, 24, 40, 0.14),
     0 0 0 1px rgba(16, 24, 40, 0.08);
   transform-origin: top center;
+  font-family: var(--font-thermal), "Courier New", monospace;
 }
 
 .templateBlock {
@@ -249,9 +250,9 @@
   display: flex;
   align-items: center;
   overflow: hidden;
-  padding: 2px 4px;
+  padding: 1px 3px;
   color: #111827;
-  line-height: 1.25;
+  line-height: 1.2;
   white-space: pre-wrap;
   user-select: none;
 }
@@ -311,13 +312,13 @@
 
 .itemsTable th {
   border-bottom: 1px solid #111827;
-  padding: 0 3px 5px;
+  padding: 0 2px 3px;
   text-align: left;
   font-weight: 800;
 }
 
 .itemsTable td {
-  padding: 7px 3px 0;
+  padding: 4px 2px 0;
   vertical-align: top;
 }
 
